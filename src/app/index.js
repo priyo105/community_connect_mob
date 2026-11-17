@@ -3,29 +3,26 @@ import { StyleSheet } from 'react-native';
 import { authService } from '../app/api/authService';
 import LoginScreen from '../app/auth/AuthScreen';
 import OnboardingScreen from '../app/auth/OnBoarding';
+import OnBoardWalkthrough from '../app/auth/OnBoardWalkthrough';
 import SignUpStep1 from '../app/auth/SignUp';
 import VerifyOtpAndRegister from '../app/auth/VerifyOtpAndRegister';
 import HomeScreen from '../app/home/HomeScreen';
 import CustomSplashScreen from '../app/Splash/CustomSplash';
+import { LocalizationProvider } from '../localization/LocalizationContext'; // 👈 Import provider
 import tokenStorage from './api/tokenstorage';
-
 
 export default function AppNavigator() {
   const [currentScreen, setCurrentScreen] = useState('splash');
   const [registeredEmail, setRegisteredEmail] = useState(''); 
   const [userData, setUserData] = useState(null);
 
-  // Check token and fetch user profile automatically right after splash finishes
   const handleSplashFinish = async () => {
     try {
       const token = await tokenStorage.getAccessToken();
-
       if (!token) {
-        setCurrentScreen('login');
+        setCurrentScreen('walkthrough');
         return;
       }
-
-      // Fetch user profile using the stored token
       const profileResponse = await authService.getProfile();
       const user = profileResponse.user || profileResponse;
       setUserData(user);
@@ -33,87 +30,60 @@ export default function AppNavigator() {
       if (user?.isOnboardingCompleted === false) {
         setCurrentScreen('onboarding');
       } else {
-        setCurrentScreen('home'); // Directly bypass login for authenticated users!
+        setCurrentScreen('home');
       }
     } catch (error) {
-      console.log('Session check failed or token expired:', error);
+      console.log('Session check failed:', error);
       await tokenStorage.clearTokens();
-      setCurrentScreen('login');
+      setCurrentScreen('walkthrough');
     }
   };
 
-  if (currentScreen === 'splash') {
-    return <CustomSplashScreen onFinish={handleSplashFinish} />;
-  }
-
-  if (currentScreen === 'login') {
-    return (
+  // Render correct screen based on state machine
+  const renderScreen = () => {
+    if (currentScreen === 'splash') return <CustomSplashScreen onFinish={handleSplashFinish} />;
+    if (currentScreen === 'walkthrough') return <OnBoardWalkthrough onFinishWalkthrough={() => setCurrentScreen('login')} />;
+    if (currentScreen === 'login') return (
       <LoginScreen 
         onNavigateToSignUp={() => setCurrentScreen('signup_step1')} 
         onLoginSuccess={(user) => {
           setUserData(user);
-          if (user?.isOnboardingCompleted === false) {
-            setCurrentScreen('onboarding');
-          } else {
-            setCurrentScreen('home');
-          }
+          setCurrentScreen(user?.isOnboardingCompleted === false ? 'onboarding' : 'home');
         }}
       />
     );
-  }
-
-  if (currentScreen === 'signup_step1') {
-    return (
+    if (currentScreen === 'signup_step1') return (
       <SignUpStep1 
-        onOtpRequested={(email) => {
-          setRegisteredEmail(email);          // 1. Save the email address
-          setCurrentScreen('signup_step2');   // 2. Switch view to the OTP verification screen
-        }}
+        onOtpRequested={(email) => { setRegisteredEmail(email); setCurrentScreen('signup_step2'); }}
         onNavigateToLogin={() => setCurrentScreen('login')}
       />
     );
-  }
-
-  if (currentScreen === 'signup_step2') {
-    return (
+    if (currentScreen === 'signup_step2') return (
       <VerifyOtpAndRegister 
         email={registeredEmail}             
         onVerificationSuccess={(user) => {
           setUserData(user);
-          // Check if verification response says onboarding is complete or not
-          if (user?.isOnboardingCompleted === false) {
-            setCurrentScreen('onboarding');    
-          } else {
-            setCurrentScreen('home');
-          }
+          setCurrentScreen(user?.isOnboardingCompleted === false ? 'onboarding' : 'home');
         }}
         onBack={() => setCurrentScreen('signup_step1')}
       />
     );
-  }
-
-  if (currentScreen === 'onboarding') {
-    return (
+    if (currentScreen === 'onboarding') return (
       <OnboardingScreen 
-        onOnboardingComplete={(updatedUser) => {
-          console.log('Onboarding complete, user:', updatedUser);
-          setUserData(updatedUser);
-          setCurrentScreen('home');
-        }} 
+        onOnboardingComplete={(updatedUser) => { setUserData(updatedUser); setCurrentScreen('home'); }} 
       />
     );
-  }
+    if (currentScreen === 'home') return <HomeScreen user={userData} />;
+    return null;
+  };
 
-  if (currentScreen === 'home') {
-    return <HomeScreen user={userData} />;
-  }
-
-  return null;
+  return (
+    <LocalizationProvider>
+      {renderScreen()}
+    </LocalizationProvider>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
 });
