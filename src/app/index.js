@@ -6,7 +6,7 @@ import OnboardingScreen from '../app/auth/OnBoarding';
 import OnBoardWalkthrough from '../app/auth/OnBoardWalkthrough';
 import SignUpStep1 from '../app/auth/SignUp';
 import VerifyOtpAndRegister from '../app/auth/VerifyOtpAndRegister';
-import HomeScreen from '../app/home/HomeScreen';
+import HomeTabNavigator from '../app/home/HomeTabNavigator';
 import CustomSplashScreen from '../app/Splash/CustomSplash';
 import { LocalizationProvider } from '../localization/LocalizationContext'; // 👈 Import provider
 import tokenStorage from './api/tokenstorage';
@@ -73,7 +73,7 @@ export default function AppNavigator() {
         onOnboardingComplete={(updatedUser) => { setUserData(updatedUser); setCurrentScreen('home'); }} 
       />
     );
-    if (currentScreen === 'home') return <HomeScreen user={userData} />;
+    if (currentScreen === 'home') return <HomeTabNavigator user={userData} />;
     return null;
   };
 
