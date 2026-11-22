@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalization } from '../../localization/LocalizationContext';
@@ -11,8 +12,9 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ user }: HomeScreenProps) {
+    const navigation = useNavigation<any>();
     const userName = user?.fullName || 'Community Member';
-    const { t } = useLocalization(); // 👈 Pull translation function from context
+    const { t } = useLocalization();
 
     return (
         <SafeAreaView style={styles.container}>
@@ -55,7 +57,12 @@ export default function HomeScreen({ user }: HomeScreenProps) {
                 </View>
 
                 <View style={styles.gridContainer}>
-                    <CategoryCard title={t('jobsAndGigs')} icon={require('../../assets/job-post.png')} backgroundColor="#E0F2FE" onPress={() => { }} />
+                    <CategoryCard
+                        title={t('jobsAndGigs')}
+                        icon={require('../../assets/job-post.png')}
+                        backgroundColor="#E0F2FE"
+                        onPress={() => navigation.navigate('JobsAndGigsHub')}
+                    />
                     <CategoryCard title={t('housing')} icon={require('../../assets/house.png')} backgroundColor="#FEF3C7" onPress={() => { }} />
                     <CategoryCard title={t('communityEvents')} icon={require('../../assets/banner.png')} backgroundColor="#DCFCE7" onPress={() => { }} />
                     <CategoryCard title={t('marriage')} icon={require('../../assets/wedding-couple.png')} backgroundColor="#F3E8FF" onPress={() => { }} />

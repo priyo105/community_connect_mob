@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../app/home/HomeScreen';
-// import JobsAndGigsScreen from '../app/home/jobs/JobsAndGigsScreen';
+ import JobsAndGigsScreen from '../app/jobs/JobCategorySelection';
 
 const Stack = createNativeStackNavigator();
 
@@ -11,7 +11,16 @@ export default function HomeStackNavigator({ user }: { user: any }) {
       <Stack.Screen name="HomeDashboard">
         {(props) => <HomeScreen {...props} user={user} />}
       </Stack.Screen>
-      {/* <Stack.Screen name="JobsAndGigs" component={JobsAndGigsScreen} /> */}
+      <Stack.Screen name="JobsAndGigsHub">
+        {(props) => (
+          <JobsAndGigsScreen
+            {...props}
+            onSelectMode={() => {}}
+            onPostPress={() => {}}
+            onBack={() => props.navigation.goBack()}
+          />
+        )}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }
