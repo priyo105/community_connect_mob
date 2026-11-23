@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useLocalization } from '../../localization/LocalizationContext';
+import { useNavigation } from '@react-navigation/native';
 
 export type JobBrowseMode = 'standard' | 'quick-gigs';
 
@@ -37,6 +38,7 @@ export default function JobsAndGigsHubScreen({
   onBack,
 }: JobsAndGigsHubScreenProps) {
   const { t } = useLocalization();
+  const navigation = useNavigation<any>();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -86,7 +88,7 @@ export default function JobsAndGigsHubScreen({
         <TouchableOpacity
           style={[styles.optionCard, styles.standardCard]}
           activeOpacity={0.92}
-          onPress={() => onSelectMode('standard')}
+          onPress={() => {navigation.navigate('JobsListing')}}
         >
           <View style={styles.cardTopRow}>
             <View style={[styles.iconBadge, styles.standardIconBadge]}>
